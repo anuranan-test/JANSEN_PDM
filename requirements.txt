@@ -1,0 +1,7 @@
+os
+sys
+numpy
+pandas
+openpyxl
+httpx
+googletrans
