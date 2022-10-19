@@ -26,17 +26,22 @@ class deid:
         global df
         global sht_nm
         global file_nm
-        file_nm = input('Please Enter File Name:\n')
-        sht_nm = input('Please Enter Excel Sheet Name:\n')
+        # file_nm = input('Please Enter File Name:\n')
+        # sht_nm = input('Please Enter Excel Sheet Name:\n')
         df = pd.DataFrame()
-        df = pd.read_excel(str(os.getcwd()+'\\Input\\'+ file_nm +config.extension), sheet_name=sht_nm)
-        # df = pd.read_excel(str(os.getcwd() + '\\Input\\' + 'Sample Data_JP' + config.extension), sheet_name='Patient Demogrpahics_Kanji')
+        # df = pd.read_excel(str(os.getcwd()+'\\Input\\'+ file_nm +config.extension), sheet_name=sht_nm)
+        df = pd.read_excel(str(os.getcwd() + '\\Input\\' + 'Sample Data_JP' + config.extension), sheet_name='Patient Demogrpahics_Hiragana')
         # print(df)
 
     def rollup(self, df):
         for year in config.roll_up:
             df[year] = df[year].astype('str')
+            # for dates in df[year]:
+            #     dates = datetime.strptime(dates, '%d/%m/%y')
+            #     dates = datetime.datetime.strptime(df[year], "%m/%d/%y").date()
             df[year] = df[year].str[-4:]+'0101'
+            print('YEARS ====')
+            print(df[year])
             # datetime.datetime.strptime(year[], '%y').strftime('%Y-%m-%d')
             # print(df[year])
         print(config.restricted_zips.keys())
@@ -57,8 +62,8 @@ class deid:
             # print(df[zips])
 
     def write(self, df):
-        df.to_excel(sht_nm+'_deid'+config.extension, index=False)
-        # df.to_excel('Patient Demogrpahics_Kanji' + '_deid' + config.extension, index=False)
+        # df.to_excel(sht_nm+'_deid'+config.extension, index=False)
+        df.to_excel('Patient Demogrpahics_Hiragana' + '_deid' + config.extension, index=False)
 
     def translate(self, df):
         translator = Translator()
@@ -69,6 +74,7 @@ class deid:
             unique_elements = df[column].unique()
             for element in unique_elements:
                 timeout = httpx.Timeout(5)
+                # element = element.replace('令和', '').replace('昭和', '').replace('平成', '')
                 print('Translating  : ', element, '\n')
                 translations[element] = translator.translate(element, source='ja', target='en').text
                 print('translated element : ', translations[element], '\n')
@@ -78,7 +84,8 @@ class deid:
     def hash(self, df):
         for col in config.hashed_cols:
             df[col.strip()] = df[col.strip()].apply(
-                lambda x: '0x' + hashlib.md5((str(x) + str(config.salt)).encode()).hexdigest().upper())
+                # lambda x: '0x' + hashlib.md5((str(x) + str(config.salt)).encode()).hexdigest().upper())
+                lambda x: '0x' + hashlib.sha256((str(x) + str(config.salt)).encode()).hexdigest().upper())
 
     def execute(self):
         self.load_data()
