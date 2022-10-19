@@ -7,4 +7,6 @@ pat_zip = ["Patient Zip"]
 translate_cols = ["Product id",	"Brand", "Indication", "Patient DOB", "Patient Prefecture",	"Patient County",	"Patient Gender ",  "Patient Preferred Language",	"Patient Preferred Method of Contact",	"Patient Best Time to Contact",	"Household_size",	"Adjusted_gross_income",	"Patient BMI",	"Patient Height",	"Patient Weight"]
 salt = "ZS_PDM_JANSSEN"
 hashed_cols = ["Patient Id", "Product id"]
-
+restricted_zips = {
+    '61': '61+71'
+}

@@ -30,6 +30,7 @@ class deid:
         sht_nm = input('Please Enter Excel Sheet Name:\n')
         df = pd.DataFrame()
         df = pd.read_excel(str(os.getcwd()+'\\Input\\'+ file_nm +config.extension), sheet_name=sht_nm)
+        # df = pd.read_excel(str(os.getcwd() + '\\Input\\' + 'Sample Data_JP' + config.extension), sheet_name='Patient Demogrpahics_Kanji')
         # print(df)
 
     def rollup(self, df):
@@ -38,14 +39,26 @@ class deid:
             df[year] = df[year].str[-4:]+'0101'
             # datetime.datetime.strptime(year[], '%y').strftime('%Y-%m-%d')
             # print(df[year])
+        print(config.restricted_zips.keys())
         for zips in config.pat_zip:
             df[zips] = df[zips].astype('str')
             df[zips] = df[zips].str[1:]
             df[zips] = df[zips].str[:2]
+            df.replace({zips: config.restricted_zips})
+            for zip_code in df[zips]:
+                if str(zip_code) in config.restricted_zips.keys():
+                    # print(str(zip_code) + '= current zip to be changed')
+                    df.loc[df[zips] == str(zip_code), zips] = str(config.restricted_zips[zip_code])
+                    # print(df.at[zip_code, zips] + '=')
+                    # df[zips] = df[zips].apply(lambda x: config.restricted_zips.get(x))
+            #     if df.loc(zip_code, zips) in config.restricted_zips:
+            #         df[zip_code][zips] = df[zip_code][zips].map(config.restricted_zips)
+        # df.applymap(lambda x: config.restricted_zips.get(x))
             # print(df[zips])
 
     def write(self, df):
         df.to_excel(sht_nm+'_deid'+config.extension, index=False)
+        # df.to_excel('Patient Demogrpahics_Kanji' + '_deid' + config.extension, index=False)
 
     def translate(self, df):
         translator = Translator()
