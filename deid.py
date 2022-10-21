@@ -26,11 +26,11 @@ class deid:
         global df
         global sht_nm
         global file_nm
-        # file_nm = input('Please Enter File Name:\n')
-        # sht_nm = input('Please Enter Excel Sheet Name:\n')
+        file_nm = input('Please Enter File Name:\n')
+        sht_nm = input('Please Enter Excel Sheet Name:\n')
         df = pd.DataFrame()
-        # df = pd.read_excel(str(os.getcwd()+'\\Input\\'+ file_nm +config.extension), sheet_name=sht_nm)
-        df = pd.read_excel(str(os.getcwd() + '\\Input\\' + 'Sample Data_JP' + config.extension), sheet_name='Patient Demogrpahics_Hiragana')
+        df = pd.read_excel(str(os.getcwd()+'\\Input\\'+ file_nm +config.extension), sheet_name=sht_nm)
+        # df = pd.read_excel(str(os.getcwd() + '\\Input\\' + 'Sample Data_JP' + config.extension), sheet_name='Patient Demogrpahics_Hiragana')
         # print(df)
 
     def rollup(self, df):
@@ -62,8 +62,8 @@ class deid:
             # print(df[zips])
 
     def write(self, df):
-        # df.to_excel(sht_nm+'_deid'+config.extension, index=False)
-        df.to_excel('Patient Demogrpahics_Hiragana' + '_deid' + config.extension, index=False)
+        df.to_excel(sht_nm+'_deid'+config.extension, index=False)
+        # df.to_excel('Patient Demogrpahicchs_Hiragana' + '_deid' + config.extension, index=False)
 
     def translate(self, df):
         translator = Translator()
@@ -75,8 +75,9 @@ class deid:
             for element in unique_elements:
                 timeout = httpx.Timeout(5)
                 # element = element.replace('令和', '').replace('昭和', '').replace('平成', '')
+                element = element.replace('邮编', '')
                 print('Translating  : ', element, '\n')
-                translations[element] = translator.translate(element, source='ja', target='en').text
+                translations[element] = translator.translate(element, target='en').text
                 print('translated element : ', translations[element], '\n')
         df.replace(translations, inplace=True)
         print('Translation Completed')
