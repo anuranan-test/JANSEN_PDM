@@ -1,7 +1,7 @@
-os
-sys
 numpy
 pandas
 openpyxl
 httpx
 googletrans
+argostranslate
+translate

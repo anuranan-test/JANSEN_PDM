@@ -7,6 +7,8 @@ import httpx
 import hashlib
 import datetime
 from googletrans import Translator
+import translators
+import  re
 
 sys.path.insert(0, os.getcwd())
 
@@ -46,6 +48,8 @@ class deid:
             # print(df[year])
         print(config.restricted_zips.keys())
         for zips in config.pat_zip:
+            for codes in zips:
+                codes.replace('邮编', '').replace('令和', '').replace('昭和', '').replace('平成', '')
             df[zips] = df[zips].astype('str')
             df[zips] = df[zips].str[1:]
             df[zips] = df[zips].str[:2]
@@ -66,21 +70,37 @@ class deid:
         # df.to_excel('Patient Demogrpahicchs_Hiragana' + '_deid' + config.extension, index=False)
 
     def translate(self, df):
-        translator = Translator()
-        translations = {}
-        for column in df.columns:
-            if column not in config.translate_cols:
-                continue
-            unique_elements = df[column].unique()
-            for element in unique_elements:
-                timeout = httpx.Timeout(5)
-                # element = element.replace('令和', '').replace('昭和', '').replace('平成', '')
-                element = element.replace('邮编', '')
-                print('Translating  : ', element, '\n')
-                translations[element] = translator.translate(element, target='en').text
-                print('translated element : ', translations[element], '\n')
-        df.replace(translations, inplace=True)
-        print('Translation Completed')
+        if "chinese" not in file_nm:
+            translator = Translator()
+            translations = {}
+            for column in df.columns:
+                if column not in config.translate_cols:
+                    continue
+                unique_elements = df[column].unique()
+                for element in unique_elements:
+                    timeout = httpx.Timeout(5)
+                    # element = element.replace('令和', '').replace('昭和', '').replace('平成', '')
+                    print('Translating  : ', element, '\n')
+                    translations[element] = translator.translate(element, target='en').text
+                    print('translated element : ', translations[element], '\n')
+            df.replace(translations, inplace=True)
+            print('Translation Completed')
+        elif "chinese" in file_nm:
+            from_code = "zh"
+            to_code = "en"
+            print('Using Argotranslate:')
+            translations = {}
+            for column in df.columns:
+                if column not in config.translate_cols:
+                    continue
+                unique_elements = df[column].unique()
+                for element in unique_elements:
+                    timeout = httpx.Timeout(5)
+                    print('ChinaTranslating  : ', element, '\n')
+                    translations[element] = translators.youdao(element, 'zh-CN', 'en')
+                    print('Chinatranslated element : ', translations[element], '\n')
+                df.replace(translations, inplace=True)
+            print('ChinaTranslation Completed')
 
     def hash(self, df):
         for col in config.hashed_cols:
