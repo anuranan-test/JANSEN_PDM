@@ -5,10 +5,10 @@ import pandas as pd
 import numpy as np
 import httpx
 import hashlib
-import datetime
+# import datetime
 from googletrans import Translator
 import translators
-import  re
+# import re
 
 sys.path.insert(0, os.getcwd())
 
@@ -22,7 +22,6 @@ class deid:
     def mask(self, df):
         for masking in self.mask_list:
             df[masking] = np.nan
-            # print(df)
 
     def load_data(self):
         global df
@@ -33,37 +32,27 @@ class deid:
         df = pd.DataFrame()
         df = pd.read_excel(str(os.getcwd()+'\\Input\\'+ file_nm +config.extension), sheet_name=sht_nm)
         # df = pd.read_excel(str(os.getcwd() + '\\Input\\' + 'Sample Data_JP' + config.extension), sheet_name='Patient Demogrpahics_Hiragana')
-        # print(df)
 
     def rollup(self, df):
         for year in config.roll_up:
             df[year] = df[year].astype('str')
-            # for dates in df[year]:
-            #     dates = datetime.strptime(dates, '%d/%m/%y')
-            #     dates = datetime.datetime.strptime(df[year], "%m/%d/%y").date()
             df[year] = df[year].str[-4:]+'0101'
             print('YEARS ====')
             print(df[year])
-            # datetime.datetime.strptime(year[], '%y').strftime('%Y-%m-%d')
-            # print(df[year])
         print(config.restricted_zips.keys())
         for zips in config.pat_zip:
-            for codes in zips:
-                codes.replace('邮编', '').replace('令和', '').replace('昭和', '').replace('平成', '')
+            print(str(df[zips]))
+            df[zips] = df[zips].apply(lambda x: x.replace("邮编", "")).apply(lambda x: x.replace("令和", ""))\
+                .apply(lambda x: x.replace("昭和", "")).apply(lambda x: x.replace("平成", ""))\
+                .apply(lambda x: x.strip())
+            print(str(df[zips]))
             df[zips] = df[zips].astype('str')
-            df[zips] = df[zips].str[1:]
             df[zips] = df[zips].str[:2]
+            print(str(df[zips]))
             df.replace({zips: config.restricted_zips})
             for zip_code in df[zips]:
                 if str(zip_code) in config.restricted_zips.keys():
-                    # print(str(zip_code) + '= current zip to be changed')
                     df.loc[df[zips] == str(zip_code), zips] = str(config.restricted_zips[zip_code])
-                    # print(df.at[zip_code, zips] + '=')
-                    # df[zips] = df[zips].apply(lambda x: config.restricted_zips.get(x))
-            #     if df.loc(zip_code, zips) in config.restricted_zips:
-            #         df[zip_code][zips] = df[zip_code][zips].map(config.restricted_zips)
-        # df.applymap(lambda x: config.restricted_zips.get(x))
-            # print(df[zips])
 
     def write(self, df):
         df.to_excel(sht_nm+'_deid'+config.extension, index=False)
@@ -79,15 +68,12 @@ class deid:
                 unique_elements = df[column].unique()
                 for element in unique_elements:
                     timeout = httpx.Timeout(5)
-                    # element = element.replace('令和', '').replace('昭和', '').replace('平成', '')
                     print('Translating  : ', element, '\n')
                     translations[element] = translator.translate(element, target='en').text
                     print('translated element : ', translations[element], '\n')
             df.replace(translations, inplace=True)
             print('Translation Completed')
         elif "chinese" in file_nm:
-            from_code = "zh"
-            to_code = "en"
             print('Using Argotranslate:')
             translations = {}
             for column in df.columns:
@@ -105,7 +91,6 @@ class deid:
     def hash(self, df):
         for col in config.hashed_cols:
             df[col.strip()] = df[col.strip()].apply(
-                # lambda x: '0x' + hashlib.md5((str(x) + str(config.salt)).encode()).hexdigest().upper())
                 lambda x: '0x' + hashlib.sha256((str(x) + str(config.salt)).encode()).hexdigest().upper())
 
     def execute(self):
@@ -115,6 +100,3 @@ class deid:
         self.rollup(df)
         self.hash(df)
         self.write(df)
-
-
-

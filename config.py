@@ -9,5 +9,6 @@ salt = "ZS_PDM_JANSSEN"
 hashed_cols = ["Patient Id"]
 restricted_zips = {
     '61': '61+71',
-    '26': '26+27'
+    '26': '26+27',
+    '53': '53+54'
 }
