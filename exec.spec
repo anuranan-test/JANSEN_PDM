@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['exec.py'],
+    ['exec.py', 'salesforce'],
     pathex=[],
     binaries=[],
     datas=[],
