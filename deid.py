@@ -7,10 +7,13 @@ import httpx
 import hashlib
 # import datetime
 from googletrans import Translator
-import translators
+# import translators
 # import re
+from simple_salesforce import Salesforce
 
 sys.path.insert(0, os.getcwd())
+
+
 
 
 class deid:
@@ -23,15 +26,31 @@ class deid:
         for masking in self.mask_list:
             df[masking] = np.nan
 
+    def salesforce_filecreat(self):
+
+        SALESFORCE_EMAIL = input('Enter SALESFORCE_EMAIL: \t')
+        SALESFORCE_TOKEN = input('Enter SALESFORCE_TOKEN: \t')
+        SALESFORCE_PASSWORD = input('Enter SALESFORCE_PASSWORD: \t')
+
+        sf = Salesforce(username=SALESFORCE_EMAIL, password=SALESFORCE_PASSWORD, security_token=SALESFORCE_TOKEN)
+
+        get_query = '''SELECT FirstName,LastName,PersonMobilePhone,Phone,PersonEmail,PersonBirthdate,Postal_Code__c,
+        PxP_Postal_Code_other__c ,PxP_City__c ,PxP_Country_other__c from Account
+        '''
+        query_result = sf.query(get_query)
+        sf_df = pd.DataFrame(query_result)
+        sf_df.to_excel('salesforce.xlsx', index=False)
+
     def load_data(self):
         global df
         global sht_nm
         global file_nm
         print('Path = '+str(os.getcwd()))
-        file_nm = input('Please Enter File Name:\n')
-        sht_nm = input('Please Enter Excel Sheet Name:\n')
+        # file_nm = input('Please Enter File Name:\n')
+        # sht_nm = input('Please Enter Excel Sheet Name:\n')
         df = pd.DataFrame()
-        df = pd.read_excel(str(os.getcwd()+'\\Input\\'+ file_nm +config.extension), sheet_name=sht_nm)
+        # df = pd.read_excel(str(os.getcwd()+'\\Input\\'+ file_nm +config.extension), sheet_name=sht_nm)
+        df = pd.read_excel(str(os.getcwd()+ '\\salesforce.xlsx'), sheet_name='Sheet1')
         # df = pd.read_excel(str(os.getcwd() + '\\Input\\' + 'Sample Data_JP' + config.extension), sheet_name='Patient Demogrpahics_Hiragana')
 
     def rollup(self, df):
@@ -95,8 +114,9 @@ class deid:
                 lambda x: '0x' + hashlib.sha256((str(x) + str(config.salt)).encode()).hexdigest().upper())
 
     def execute(self):
+        self.salesforce_filecreat()
         self.load_data()
-        self.translate(df)
+        # self.translate(df)
         self.mask(df)
         self.rollup(df)
         self.hash(df)
