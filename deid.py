@@ -27,6 +27,7 @@ class deid:
         global df
         global sht_nm
         global file_nm
+        print('Path = '+str(os.getcwd()))
         file_nm = input('Please Enter File Name:\n')
         sht_nm = input('Please Enter Excel Sheet Name:\n')
         df = pd.DataFrame()
@@ -42,12 +43,12 @@ class deid:
         print(config.restricted_zips.keys())
         for zips in config.pat_zip:
             print(str(df[zips]))
-            df[zips] = df[zips].apply(lambda x: x.replace("邮编", "")).apply(lambda x: x.replace("令和", ""))\
-                .apply(lambda x: x.replace("昭和", "")).apply(lambda x: x.replace("平成", ""))\
-                .apply(lambda x: x.strip())
+            df[zips] = df[zips].apply(lambda x: str(x).replace("邮编", "")).apply(lambda x: str(x).replace("令和", ""))\
+                .apply(lambda x: str(x).replace("昭和", "")).apply(lambda x: str(x).replace("平成", ""))\
+                .apply(lambda x: str(x).strip())
             print(str(df[zips]))
             df[zips] = df[zips].astype('str')
-            df[zips] = df[zips].str[:2]
+            df[zips] = df[zips].str[:3]
             print(str(df[zips]))
             df.replace({zips: config.restricted_zips})
             for zip_code in df[zips]:
@@ -83,7 +84,7 @@ class deid:
                 for element in unique_elements:
                     timeout = httpx.Timeout(5)
                     print('ChinaTranslating  : ', element, '\n')
-                    translations[element] = translators.youdao(element, 'zh-CN', 'en')
+                    translations[element] = translators.youdao(str(element), dest = 'en')
                     print('Chinatranslated element : ', translations[element], '\n')
                 df.replace(translations, inplace=True)
             print('ChinaTranslation Completed')
